@@ -1,6 +1,6 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
-import { disableRC, enableRC } from "./index.js";
+import { disableRC, enableRC, setFilterKeyRC } from "./index.js";
 
 const channels = {
   test: 332768026,
@@ -13,6 +13,7 @@ const token = process.env.BOT_API;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.on("message", (msg) => {
+  if (msg.text.includes("set_filter_key")) setFilterKeyRC(msg.text.split(" ")[1]);
   switch (msg.text) {
     case "disable": return disableRC();
     case "enable": return enableRC();

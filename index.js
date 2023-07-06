@@ -16,6 +16,7 @@ function serviceLog(msg) {
 // app variables
 let period = "";
 let status = false;
+let filter_key = "";
 
 // remote control
 export function disableRC() {
@@ -23,9 +24,14 @@ export function disableRC() {
   serviceLog("program stop");
 }
 
-export async function enableRC() {
+export function enableRC() {
   status = true;
   serviceLog("program start")
+}
+
+export function setFilterKeyRC(key) {
+  filter_key = key;
+  serviceLog(`[+] ${filter_key} successful setted`);
 }
 
 function setTomorrowPeriod() {
@@ -37,7 +43,13 @@ function setTomorrowPeriod() {
 
 // need refactoring
 async function publicationScript() {
-  const scheduled = await client.db("events").collection("scheduled").find().toArray();
+  let scheduled = await client.db("events").collection("scheduled").find().toArray();
+  if (filter_key.length > 0) {
+    const filtered_scheduled = scheduled.filter((item) => item.link.includes(filter_key));
+    if (filtered_scheduled.length > 0) {
+      scheduled = filtered_scheduled;
+    }
+  }
   const eventIndex = parseInt(Math.random() * scheduled.length);
   serviceLog(`start scraping event: ${scheduled[eventIndex]["link"].split("/").slice(3).join("/")}`)
   const event = await parseEventPage(resources.culture, scheduled[eventIndex]["link"].split("/").slice(3).join("/"));
@@ -158,7 +170,7 @@ async function nightScript() {
 scheduleJob(morningRule, () => morningScript());
 scheduleJob(nightRule, () => nightScript());
 
-scheduleJob("0 */3 * * *", async () => {
+scheduleJob("0 */4 * * *", async () => {
   if (status) {
     const result = await publicationScript();
     if (result) serviceLog("[+] post successful sended!")
