@@ -38,7 +38,7 @@ export async function postMessage(object) {
         parse_mode: "HTML"
       }
     }
-    bot.sendPhoto(channels.events_vrn, object.image, options);
+    await bot.sendPhoto(channels.events_vrn, object.image, options);
     return true;
   } catch (e) {
     return false;
