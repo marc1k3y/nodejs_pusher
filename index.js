@@ -170,7 +170,7 @@ async function nightScript() {
 scheduleJob(morningRule, () => morningScript());
 scheduleJob(nightRule, () => nightScript());
 
-scheduleJob("* */4 * * *", async () => {
+scheduleJob("0 */4 * * *", async () => {
   if (status) {
     const result = await publicationScript();
     if (result) serviceLog("[+] post successful sended!")
