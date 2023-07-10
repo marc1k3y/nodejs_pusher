@@ -15,9 +15,9 @@ const bot = new TelegramBot(token, { polling: true });
 bot.on("message", (msg) => {
   if (msg.text.includes("set_filter_key")) setFilterKeyRC(msg.text.split(" ")[1]);
   switch (msg.text) {
-    case "disable": return disableRC();
-    case "enable": return enableRC();
-    case "forced_publicatiob": return forcedPublication();
+    case "/disable": return disableRC();
+    case "/enable": return enableRC();
+    case "/forced_publication": return forcedPublication();
     default: return;
   }
 });
