@@ -173,7 +173,7 @@ export function forcedPublication() {
 export async function setFilterKeyRC(key) {
   filter_key = key;
   const query = { FieldToSearch: new RegExp('^' + key) };
-  const right_events = await client.db("events").collection("scheduled").find(query);
+  const right_events = await client.db("events").collection("scheduled").find(query).toArray();
   serviceLog(`[+] ${filter_key} successful setted, finding ${right_events.length} events`);
 }
 
