@@ -42,7 +42,10 @@ async function publicationScript() {
     const insertToPosted = await client.db("events").collection("posted").insertOne({ link: scheduled[eventIndex]["link"] });
     if (insertToPosted.acknowledged && insertToPosted.insertedId) {
       const removeFromScheduled = await client.db("events").collection("scheduled").deleteOne({ _id: new ObjectId(scheduled[eventIndex]["_id"]) });
-      if (removeFromScheduled.acknowledged) return true;
+      if (removeFromScheduled.acknowledged) {
+          filter_key = "";
+          return true; 
+      }
     }
   }
 }
@@ -172,10 +175,14 @@ export function forcedPublication() {
 }
 
 export async function setFilterKeyRC(key) {
-  filter_key = key;
   const events = await client.db("events").collection("scheduled").find().toArray();
   const right_events = events.filter((item) => item.link.includes(key));
-  serviceLog(`[+] ${filter_key} successful setted, finding ${right_events.length} events`);
+  if (right_events.length > 0) {
+    filter_key = key;
+    serviceLog(`[+] ${filter_key} successful setted, finding ${right_events.length} events`);
+  } else {
+      serviceLog(`[-] events with ${key} not found`);
+  }
 }
 
 scheduleJob("0 */2 * * *", async () => {
