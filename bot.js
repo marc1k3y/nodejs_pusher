@@ -4,7 +4,7 @@ import { disableRC, enableRC, forcedPublication, setFilterKeyRC } from "./index.
 
 const channels = {
   test: 332768026,
-  events_vrn: "@meropriyatel_voronezh",
+  events_vrn: "@culture_vrn",
   cars_413: "@cars_413"
 }
 
