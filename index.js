@@ -18,25 +18,6 @@ let period = "";
 let status = false;
 let filter_key = "";
 
-async function morningScript() {
-  setTomorrowPeriod();
-  const lastPageNumber = await scrapLastPageNumber(resources.culture, period);
-  const eventLinks = await scrapEventLinks(lastPageNumber, period);
-  const { scheduledEventsDB, postedEventsDB } = await getSavedEventLinks();
-  const filteredEventLinks = filterEventLinks(scheduledEventsDB, postedEventsDB, eventLinks);
-  const result = await saveScheduledEventLinks(filteredEventLinks);
-  if (result) {
-    serviceLog(`[+] Morning script complete successfull, set ${period}, saved ${result} links`);
-    status = true;
-  }
-}
-
-async function nightScript() {
-  const result = await deleteAllScheduled();
-  status = false;
-  serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
-}
-
 function setTomorrowPeriod() {
   const today = new Date();
   let tomorrow = new Date();
@@ -141,6 +122,24 @@ async function deleteAllScheduled() {
 }
 
 // SCHEDULER
+async function morningScript() {
+  setTomorrowPeriod();
+  const lastPageNumber = await scrapLastPageNumber(resources.culture, period);
+  const eventLinks = await scrapEventLinks(lastPageNumber, period);
+  const { scheduledEventsDB, postedEventsDB } = await getSavedEventLinks();
+  const filteredEventLinks = filterEventLinks(scheduledEventsDB, postedEventsDB, eventLinks);
+  const result = await saveScheduledEventLinks(filteredEventLinks);
+  if (result) {
+    serviceLog(`[+] Morning script complete successfull, set ${period}, saved ${result} links`);
+    status = true;
+  }
+}
+
+async function nightScript() {
+  const result = await deleteAllScheduled();
+  status = false;
+  serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
+}
 // const morningRule = new RecurrenceRule();
 // morningRule.hour = 7;
 // morningRule.minute = 30;
@@ -171,9 +170,11 @@ export function forcedPublication() {
   publicationScript();
 }
 
-export function setFilterKeyRC(key) {
+export async function setFilterKeyRC(key) {
   filter_key = key;
-  serviceLog(`[+] ${filter_key} successful setted`);
+  const query = { FieldToSearch: new RegExp('^' + key) };
+  const right_events = await client.db("events").collection("scheduled").find(query);
+  serviceLog(`[+] ${filter_key} successful setted, finding ${right_events.length} events`);
 }
 
 scheduleJob("0 */2 * * *", async () => {
