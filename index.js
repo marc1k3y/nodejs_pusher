@@ -1,5 +1,5 @@
 import express from "express";
-import { scheduleJob, RecurrenceRule } from "node-schedule";
+import { scheduleJob } from "node-schedule";
 import { MongoClient, ObjectId } from "mongodb";
 import { postMessage, sendServiceMessage } from "./bot.js";
 import { parseEventPage, scrapEventLinks, scrapLastPageNumber, resources } from "./parser.js";
@@ -18,15 +18,36 @@ let period = "";
 let status = false;
 let filter_key = "";
 
+async function morningScript() {
+  setTomorrowPeriod();
+  const lastPageNumber = await scrapLastPageNumber(resources.culture, period);
+  const eventLinks = await scrapEventLinks(lastPageNumber, period);
+  const { scheduledEventsDB, postedEventsDB } = await getSavedEventLinks();
+  const filteredEventLinks = filterEventLinks(scheduledEventsDB, postedEventsDB, eventLinks);
+  const result = await saveScheduledEventLinks(filteredEventLinks);
+  if (result) {
+    serviceLog(`[+] Morning script complete successfull, set ${period}, saved ${result} links`);
+    status = true;
+  }
+}
+
+async function nightScript() {
+  const result = await deleteAllScheduled();
+  status = false;
+  serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
+}
+
 // remote control
 export function disableRC() {
-  status = false;
-  serviceLog("program stop");
+  nightScript();
+  // status = false;
+  // serviceLog("program stop");
 }
 
 export function enableRC() {
-  status = true;
-  serviceLog("program start")
+  morningScript();
+  // status = true;
+  // serviceLog("program start")
 }
 
 export function setFilterKeyRC(key) {
@@ -138,39 +159,20 @@ async function deleteAllScheduled() {
 }
 
 // SCHEDULER
-const morningRule = new RecurrenceRule();
-morningRule.hour = 7;
-morningRule.minute = 30;
-morningRule.tz = "Europe/Moscow";
+// const morningRule = new RecurrenceRule();
+// morningRule.hour = 7;
+// morningRule.minute = 30;
+// morningRule.tz = "Europe/Moscow";
 
-const nightRule = new RecurrenceRule();
-nightRule.hour = 20;
-nightRule.minute = 30;
-nightRule.tz = "Europe/Moscow";
+// const nightRule = new RecurrenceRule();
+// nightRule.hour = 20;
+// nightRule.minute = 30;
+// nightRule.tz = "Europe/Moscow";
 
-async function morningScript() {
-  setTomorrowPeriod();
-  const lastPageNumber = await scrapLastPageNumber(resources.culture, period);
-  const eventLinks = await scrapEventLinks(lastPageNumber, period);
-  const { scheduledEventsDB, postedEventsDB } = await getSavedEventLinks();
-  const filteredEventLinks = filterEventLinks(scheduledEventsDB, postedEventsDB, eventLinks);
-  const result = await saveScheduledEventLinks(filteredEventLinks);
-  if (result) {
-    serviceLog(`[+] Morning script complete successfull, set ${period}, saved ${result} links`);
-    status = true;
-  }
-}
+// scheduleJob(morningRule, () => morningScript());
+// scheduleJob(nightRule, () => nightScript());
 
-async function nightScript() {
-  const result = await deleteAllScheduled();
-  status = false;
-  serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
-}
-
-scheduleJob(morningRule, () => morningScript());
-scheduleJob(nightRule, () => nightScript());
-
-scheduleJob("0 */4 * * *", async () => {
+scheduleJob("0 */2 * * *", async () => {
   if (status) {
     const result = await publicationScript();
     if (result) serviceLog("[+] post successful sended!")
