@@ -37,24 +37,6 @@ async function nightScript() {
   serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
 }
 
-// remote control
-export function disableRC() {
-  nightScript();
-  // status = false;
-  // serviceLog("program stop");
-}
-
-export function enableRC() {
-  morningScript();
-  // status = true;
-  // serviceLog("program start")
-}
-
-export function setFilterKeyRC(key) {
-  filter_key = key;
-  serviceLog(`[+] ${filter_key} successful setted`);
-}
-
 function setTomorrowPeriod() {
   const today = new Date();
   let tomorrow = new Date();
@@ -171,6 +153,28 @@ async function deleteAllScheduled() {
 
 // scheduleJob(morningRule, () => morningScript());
 // scheduleJob(nightRule, () => nightScript());
+
+// remote control
+export function disableRC() {
+  nightScript();
+  // status = false;
+  // serviceLog("program stop");
+}
+
+export function enableRC() {
+  morningScript();
+  // status = true;
+  // serviceLog("program start")
+}
+
+export function forcedPublication() {
+  publicationScript();
+}
+
+export function setFilterKeyRC(key) {
+  filter_key = key;
+  serviceLog(`[+] ${filter_key} successful setted`);
+}
 
 scheduleJob("0 */2 * * *", async () => {
   if (status) {
