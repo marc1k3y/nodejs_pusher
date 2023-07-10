@@ -1,6 +1,6 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
-import { disableRC, enableRC, setFilterKeyRC } from "./index.js";
+import { disableRC, enableRC, forcedPublication, setFilterKeyRC } from "./index.js";
 
 const channels = {
   test: 332768026,
@@ -17,6 +17,7 @@ bot.on("message", (msg) => {
   switch (msg.text) {
     case "disable": return disableRC();
     case "enable": return enableRC();
+    case "forced_publicatiob": return forcedPublication();
     default: return;
   }
 });
