@@ -138,6 +138,7 @@ async function morningScript() {
 async function nightScript() {
   const result = await deleteAllScheduled();
   status = false;
+  filter_key = "";
   serviceLog(`[+] Night script completed successful, deleted ${result} scheduled events`);
 }
 // const morningRule = new RecurrenceRule();
@@ -172,7 +173,7 @@ export function forcedPublication() {
 
 export async function setFilterKeyRC(key) {
   filter_key = key;
-  const query = { FieldToSearch: new RegExp('^' + key) };
+  const query = { link: new RegExp('^' + key) };
   const right_events = await client.db("events").collection("scheduled").find(query).toArray();
   serviceLog(`[+] ${filter_key} successful setted, finding ${right_events.length} events`);
 }
